@@ -17,7 +17,7 @@ struct arestaRota {
 typedef struct {
     char aero[4];
     char* aeroNome;
-    struct arestaRota* cab;
+    struct arestaRota* cab,*ultimo;
 
 } VerticeRotas;
 
@@ -56,6 +56,6 @@ typedef struct {
 bool lerArquivo(Voos** voos, Rotas** rotas);
 void mostrarGrafo(Rotas* rotas, Voos* voos);
 void criarGrafos(Voos** voos, Rotas** rotas);
-
+void adicionarRota(Rotas** rotas, int pos, char* Origem, char* Destino);
 #endif /* GRAFO_H */
 

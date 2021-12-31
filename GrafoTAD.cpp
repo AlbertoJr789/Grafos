@@ -12,9 +12,9 @@ bool lerArquivo(Voos** voos, Rotas** rotas) {
 
 
 	ifstream Arquivo;
+	string linha;
 
 	Arquivo.open("Flights_USA.txt");
-	string linha;
 
 	if (Arquivo.is_open()) {
 
@@ -50,6 +50,41 @@ bool lerArquivo(Voos** voos, Rotas** rotas) {
 				}
 
 			}
+			else if (contLinha >= 23 && contLinha < 57) { //leitura das rotas
+
+				char* charLinha = new char[linha.length()];
+				strcpy(charLinha, linha.c_str());
+				int posOrigem = 0, posDestino = 0 ;
+
+				char* Origem = NULL;
+				char* Destino = NULL;
+
+				//obtendo rota de origem 
+				Origem = strtok(charLinha, " ");
+				//obtendo rota de destino
+				Destino = strtok(NULL, " ");
+												
+				for (int i = 0; i < (*rotas)->qtdR; i++) {
+
+					//procurando a posição do vértice de origem
+					if (!strcmp((*rotas)->vr[i].aero, Origem))
+						posOrigem = i;
+					//procurando a posição do vértice de destino
+					if (!strcmp((*rotas)->vr[i].aero, Destino))
+						posDestino = i;
+
+				}
+
+				//adicionando a rota (de forma não direcionada)
+				adicionarRota(rotas,posOrigem,Origem,Destino);
+				adicionarRota(rotas,posDestino,Destino,Origem);
+
+			}
+			else { //leitura dos voos
+
+
+
+			}
 
 			contLinha++; //proxima linha
 			posAero++; //proximo aeroporto
@@ -76,7 +111,8 @@ void mostrarGrafo(Rotas* rotas, Voos* voos) {
 		for (int i = 0; i < rotas->qtdR; i++) { //percorrendo os aeroportos
 
 			cout << "\n";
-			printf("%s(%s) ", rotas->vr[i].aero, rotas->vr[i].aeroNome);
+			//printf("%s(%s) ", rotas->vr[i].aero, rotas->vr[i].aeroNome);
+			printf("%s ", rotas->vr[i].aero);
 			arestaRota* rotasAdj = rotas->vr[i].cab;
 
 			while (rotasAdj) { //percorrendo as rotas que um aeroporto tem pra outros
@@ -112,7 +148,7 @@ void criarGrafos(Voos** voos, Rotas** rotas) {
 
 		(*rotas)->qtdR = 23; //quantidade de vertices (sao 23 aeroportos)
 		(*rotas)->vr = (VerticeRotas*)malloc((*rotas)->qtdR * sizeof(VerticeRotas));
-		
+
 		for (int i = 0; i < (*rotas)->qtdR; i++) { //inicializando os valores
 
 			(*rotas)->vr[i].cab = NULL;
@@ -138,6 +174,30 @@ void criarGrafos(Voos** voos, Rotas** rotas) {
 	}
 	else
 		cout << "\nErro ao alocar voos";
+
+
+}
+
+void adicionarRota(Rotas** rotas, int pos, char* Origem,char* Destino) {
+
+	//criando a aresta
+	struct arestaRota* novo = (struct arestaRota*)malloc(sizeof(struct arestaRota));
+	strcpy(novo->aero,Destino);
+	novo->prox = NULL;
+
+	if (!(*rotas)->vr[pos].cab) { //se o vertice nao possuir nenhuma aresta
+
+		(*rotas)->vr[pos].cab = novo; //esta aresta sera definida como a primeira
+		(*rotas)->vr[pos].ultimo = novo; //ele tambem sera o ultimo elemento da lista
+
+	} 
+	else { //se nao, sera inserida no final
+
+	(*rotas)->vr[pos].ultimo->prox = novo;
+	(*rotas)->vr[pos].ultimo = novo;
+
+	}
+				
 
 
 }

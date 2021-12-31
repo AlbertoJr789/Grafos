@@ -18,7 +18,7 @@ int main() {
     //arquivo : tirar comida
     // verificar se de um aeroporto para o outro tem um caminho direto
     // se nao, verificar a rota alternativa
-    // o grafo nao Ã© hamiltoniano
+    // o grafo nao é hamiltoniano
     // 6 - Algoritmo de Kruskal  
 
 
@@ -27,7 +27,7 @@ int main() {
 
     cout << "\nLendo os dados..." << endl;
     //sleep();
-        
+
     if (lerArquivo(&voos, &rotas)) { //se conseguir ler o arquivo, acionar o MENU
 
         while (1) {
@@ -43,46 +43,47 @@ int main() {
 
             switch (op) {
 
-                case 1:
-                {
+            case 1:
+            {
 
-                    mostrarGrafo(rotas, voos);
+                mostrarGrafo(rotas, voos);
 
-                    break;
-                }
-                case 2:
-                {
-                    break;
-                }
-                case 3:
-                {
-                    break;
-                }
-                case 4:
-                {
-                    break;
-                }
-                case 5:
-                {
-                    break;
-                }
-                case 6:
-                {
-                    break;
-                }
-                default:
-                {
-                    cout << "\nOpcao incorreta !";
-                    break;
-                }
+                break;
+            }
+            case 2:
+            {
+                break;
+            }
+            case 3:
+            {
+                break;
+            }
+            case 4:
+            {
+                break;
+            }
+            case 5:
+            {
+                break;
+            }
+            case 6:
+            {
+                break;
+            }
+            default:
+            {
+                cout << "\nOpcao incorreta !";
+                break;
+            }
 
             }
 
         }
 
-    }else
+    }
+    else
         exit(EXIT_FAILURE);
-    
+
 
 
     exit(EXIT_SUCCESS);
