@@ -5,6 +5,7 @@
 #include <string.h>
 #include <iostream>
 #include <fstream>
+#include <ctime>
 
 using namespace std;
 
@@ -22,7 +23,10 @@ bool lerArquivo(Voos** voos, Rotas** rotas) {
 		criarGrafos(voos, rotas);
 
 		int contLinha = 0;
+		//controla o vertice das rotas
 		int posAero = 0;
+		//controla o vertice dos voos
+		int posVoos = 0;
 
 		while (getline(Arquivo, linha)) { //lendo os dados
 
@@ -49,6 +53,7 @@ bool lerArquivo(Voos** voos, Rotas** rotas) {
 					p++;
 				}
 
+				posAero++; //proximo aeroporto
 			}
 			else if (contLinha >= 23 && contLinha < 57) { //leitura das rotas
 
@@ -82,12 +87,48 @@ bool lerArquivo(Voos** voos, Rotas** rotas) {
 			}
 			else { //leitura dos voos
 
+				char* charLinha = new char[linha.length()];
+				strcpy(charLinha, linha.c_str());
 
+				//obtendo o nome da Companhia Aerea
+				strncpy((*voos)->v[posVoos].empresaAero, charLinha, 2);
+				(*voos)->v[posVoos].empresaAero[3] = '\0';
 
+				char* charKm = (char*)calloc(6,sizeof(char));
+				int k = 0,i=0;
+
+				for (i = 2; i < 6; i++) {
+
+					//obtendo os dados da distancia
+					if (charLinha[i] != ' ') { //achou um numero
+
+					charKm[k] = charLinha[i];
+					k++;
+
+					}
+
+				}
+
+				int Km = atoi(charKm);
+				
+				k = 0;
+
+				for(i = 8;i < 11;i++) //obtendo o aeroporto de origem
+					(*voos)->v[posVoos].aero[k] = charLinha[i];
+					
+				(*voos)->v[posVoos].aero[3] = '\0';
+				
+				// 12 a 16 - horario de entrada
+				// 18 a 21 - aeroporto destino
+				// 22 a 27 - horario de chegada
+
+				
+				
+				posVoos++;
 			}
 
 			contLinha++; //proxima linha
-			posAero++; //proximo aeroporto
+			
 		}
 
 	}
