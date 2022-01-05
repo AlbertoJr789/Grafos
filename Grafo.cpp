@@ -5,28 +5,31 @@
 #include <stdio.h>
 #include <climits>
 
-void sleep();
+void dormir();
 int MENU();
 
 using namespace std;
 
 int main() {
 
-    // 23 aeroportos
-    // grafo de rotas : nao dirigido 57 ROTAS
+   
+
     // grafo de voos : dirigido 780 VOOS
-    //arquivo : tirar comida
+
     // verificar se de um aeroporto para o outro tem um caminho direto
     // se nao, verificar a rota alternativa
     // o grafo nao é hamiltoniano
     // 6 - Algoritmo de Kruskal  
+    
+    // Considerações : alguns horarios de chegada/entrada aparentam incorretos ??
+    // DL1166  ATL  632A  BNA  625A
 
 
     Rotas* rotas = NULL;
     Voos* voos = NULL;
 
     cout << "\nLendo os dados..." << endl;
-    //sleep();
+    //dormir();
 
     if (lerArquivo(&voos, &rotas)) { //se conseguir ler o arquivo, acionar o MENU
 
@@ -111,7 +114,7 @@ int MENU() {
 
 }
 
-void sleep() {
+void dormir() {
 
     for (int i = 0; i < INT_MAX; i++);
 
