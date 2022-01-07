@@ -32,6 +32,7 @@ typedef struct {
 struct arestaVoo {
     char empresaAero[3];
     char aero[4];
+    char* aeroNome;
     int distancia;
     double TempoViagem;
     struct arestaVoo* prox;
@@ -40,6 +41,7 @@ struct arestaVoo {
 typedef struct {
    
     char aero[4];
+    char* aeroNome;
     struct arestaVoo* cab, *ultimo;
 
 } VerticeVoos;
@@ -63,8 +65,19 @@ void adicionarVoo(Voos** voos, char* empresaAero, char* aeroOrigem, char* aeroDe
 //Funções auxiliares
 char* obterAeroDestino(std::string charLinha);
 char* obterAeroOrigem(std::string charLinha);
+char* obterNomeAero(Voos* voos,char* aero);
 int obterDistancia(std::string charLinha);
 int buscarAeroOrigem(Voos* v, char* aeroOrigem);
+
+//Questao 3-b)
+void mostrarAeroportos(Rotas* rotas);
+void mostrarCaminho(Rotas* rotas, int aero1, int aero2);
+void DFSRotas(Rotas* rotas, bool* visitados, int aeroOriginal, int aero1, int aero2, bool* jaAchou);
+int posicaoRota(Rotas* rotas, char* aero);
+
+//Questao 4
+void mostrarVoos(int aero, Voos* voos);
+
 
 #endif /* GRAFO_H */
 

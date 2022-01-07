@@ -11,6 +11,8 @@
 
 using namespace std;
 
+//Leitura dos Grafos
+
 bool lerArquivo(Voos** voos, Rotas** rotas) {
 
 	ifstream Arquivo;
@@ -20,7 +22,7 @@ bool lerArquivo(Voos** voos, Rotas** rotas) {
 
 	if (Arquivo.is_open()) {
 
-		cout << "\nLeitura realizada com sucesso !";
+		cout << "\nArquivo lido com sucesso !";
 		criarGrafos(voos, rotas);
 
 		int contLinha = 0;
@@ -53,10 +55,14 @@ bool lerArquivo(Voos** voos, Rotas** rotas) {
 				//alocando string do tamanho do nome do aeroporto
 				(*rotas)->vr[posAero].aeroNome = (char*)calloc((tamAeroNome + 1), sizeof(char));
 				(*rotas)->vr[posAero].aeroNome[strlen((*rotas)->vr[posAero].aeroNome)] = '\0';
+				
+				(*voos)->v[posAero].aeroNome = (char*)calloc((tamAeroNome + 1), sizeof(char));
+				(*voos)->v[posAero].aeroNome[strlen((*rotas)->vr[posAero].aeroNome)] = '\0';
 
 				for (int i = 4; i < strlen(charLinha); i++) { //copiando o nome do aeroporto
 
 					(*rotas)->vr[posAero].aeroNome[p] = charLinha[i];
+					(*voos)->v[posAero].aeroNome[p] = charLinha[i];
 					p++;
 				}
 
@@ -260,12 +266,14 @@ void adicionarRota(Rotas** rotas, int pos, char* Origem,char* Destino) {
 
 void adicionarVoo(Voos** voos, char* empresaAero, char* aeroOrigem, char* aeroDestino, double tempo, int distancia) {
 
+	//obtem a posicao do aeroporto de origem para realizar a insercao na lista
 	int pos = buscarAeroOrigem((*voos),aeroOrigem);
 
-	//criando a aresta
+	//criando a aresta, adicionando os dados
 	struct arestaVoo* novo = (struct arestaVoo*)malloc(sizeof(struct arestaVoo));
 	strcpy(novo->aero, aeroDestino);
 	strcpy(novo->empresaAero, empresaAero);
+	novo->aeroNome = obterNomeAero((*voos),aeroDestino);
 	novo->distancia = distancia;
 	novo->TempoViagem = tempo;
 	novo->prox = NULL;
@@ -304,7 +312,6 @@ char* obterAeroDestino(std::string charLinha) {
 	return aero;
 }
 
-
 char* obterAeroOrigem(std::string charLinha) {
 
 	int k = 0;
@@ -320,6 +327,16 @@ char* obterAeroOrigem(std::string charLinha) {
 	aero[3] = '\0';
 
 	return aero;
+}
+
+char* obterNomeAero(Voos* voos,char* aero) {
+
+	for (int i = 0; i < voos->qtdV; i++) { //procura o nome do aeroporto desejado e retorna
+
+		if (!strcmp(voos->v[i].aero, aero))
+			return voos->v[i].aeroNome;
+	}
+
 }
 
 int obterDistancia(std::string charLinha) {
@@ -351,5 +368,98 @@ int buscarAeroOrigem(Voos* v,char* aeroOrigem) {
 			return i;
 
 	}
+
+}
+
+
+//Questao 3-b)
+
+void mostrarAeroportos(Rotas* rotas) {
+
+
+	for (int i = 0; i < rotas->qtdR; i++) 
+		cout << i + 1 << "- " << rotas->vr[i].aero << "(" << rotas->vr[i].aeroNome << ")" << endl;
+			
+}
+
+void mostrarCaminho(Rotas* rotas, int aero1, int aero2) {
+	
+	//inicializa o vetor de adjacencias visitadas em falso
+	bool* visitados = (bool*)calloc(rotas->qtdR,sizeof(bool));
+	bool jaAchou = false;
+
+	//Algoritmo de busca em profundidade 
+	DFSRotas(rotas, visitados, aero1,aero1, aero2,&jaAchou);
+	
+	free(visitados);
+}
+
+void DFSRotas(Rotas* rotas,bool* visitados,int aeroOriginal,int aero1,int aero2,bool* jaAchou) {
+
+	int i = 0;
+
+	struct arestaRota* rotasAdj = rotas->vr[aero1].cab;
+
+	visitados[aero1] = true;
+	
+	if(aero1 == aeroOriginal)
+		printf("%s(Origem) -> ", rotas->vr[aeroOriginal].aero);
+
+	while (rotasAdj && strcmp(rotasAdj->aero,rotas->vr[aero2].aero)) //percorre as adjacencias em busca do aeroporto de destino
+	{
+		i = posicaoRota(rotas, rotasAdj->aero); //pesquisa a posicao do vertice a partir do nome
+		
+		if (!visitados[i] && !*jaAchou) {	//caso o vertice ja nao tenha sido visitado e a rota nao tenha sido encontrada
+											
+			printf("%s -> ", rotasAdj->aero); //imprimi-lo
+			DFSRotas(rotas,visitados,aeroOriginal, i, aero2,jaAchou); //o mesmo sera visitado e suas adjacencias tambem
+
+		}
+		rotasAdj = rotasAdj->prox;
+	}
+
+	if (rotasAdj) { 
+
+		if (!strcmp(rotasAdj->aero, rotas->vr[aero2].aero)) { //caso a rota adjacente seja a rota de destino
+
+			cout << rotas->vr[aero2].aero << "(Destino)";
+			*jaAchou = true; //marca-la como encontrada
+			
+		}
+	} 
+		
+}
+
+int posicaoRota(Rotas* rotas, char* aero) {
+
+	for (int i = 0; i < rotas->qtdR; i++) { 
+
+		if (!strcmp(aero, rotas->vr[i].aero)) //devolve o indice do vertice que tem o aeroporto desejado
+			return i;
+
+	}
+
+}
+
+//Questao 4
+
+void mostrarVoos(int aero, Voos* voos) {
+
+	struct arestaVoo* voosAdj = voos->v[aero].cab;
+
+	cout << "\nVoos disponiveis em " << voos->v[aero].aeroNome;
+
+	while (voosAdj) {
+		
+		cout << "\n-------------------------------------------";
+		printf("\nEmpresa: %s", voosAdj->empresaAero);
+		printf("\nDestino : %s(%s)", voosAdj->aero,voosAdj->aeroNome);
+		printf("\nDistancia:  %dkm", voosAdj->distancia);
+		printf("\nTempo de viagem:  %.2lf horas", voosAdj->TempoViagem);
+		cout << "\n-------------------------------------------";
+
+		voosAdj = voosAdj->prox;
+	}
+
 
 }
