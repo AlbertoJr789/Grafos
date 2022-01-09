@@ -71,7 +71,7 @@ int main() {
                             cout << "\nOpcao Incorreta ! O segundo aeroporto deve ser diferente ou a opcao selecionada nao existe !";
                         else {
 
-                            cout << "\nRotas entre " << rotas->vr[op1 - 1].aero << " e " << rotas->vr[op2 - 1].aero << endl;
+                            cout << "\nRota de " << rotas->vr[op1 - 1].aero << " pra " << rotas->vr[op2 - 1].aero << endl << endl;
                             mostrarCaminho(rotas,op1-1, op2-1);
                       
                             break;
@@ -108,16 +108,89 @@ int main() {
             }
             case 4: //Consultar viagem de menor custo
             {
+                int op1 = 0, op2 = 0;
+
+                while (1) {
+
+                    cout << "\n";
+                    mostrarAeroportos(rotas);
+                    cout << "\nSelecione o primeiro aeroporto desejado: ";
+                    cin >> op1;
+                    cin.ignore();
+
+                    if (op1 < 1 || op1 > 23)
+                        cout << "\nOpcao incorreta !";
+                    else {
+                        cout << "\n";
+                        mostrarAeroportos(rotas);
+                        cout << "\nSelecione o segundo aeroporto desejado: ";
+                        cin >> op2;
+                        cin.ignore();
+
+                        if ((op2 == op1) || (op2 < 1 || op2 > 23))
+                            cout << "\nOpcao Incorreta ! O segundo aeroporto deve ser diferente ou a opcao selecionada nao existe !";
+                        else {
+
+                            int opAv;
+
+                            cout << "\nGostaria de avaliar a melhor rota de voo por distancia ou tempo ?";
+                            cout << "\n1- Avaliar por tempo total de viagem";
+                            cout << "\n2- Avaliar por distancia total";
+                            cout << "\nEscolha a opcao desejada: ";
+                            cin >> opAv;
+                            cin.ignore();
+
+                            if (opAv < 1 || opAv > 2)
+                                cout << "\nOpcao Incorreta ! Insira novamente !";
+                            else 
+                               mostrarMenorRota(voos, op1 - 1, op2 - 1, opAv);
+                                            
+
+                            break;
+
+                        }
+
+                    }
+
+                }
+
+
                 break; 
             }
-            case 5: //Gerar grafo otimizado
+            case 5: //checar se a partir de um aeroporto é possivel alcançar outro
             {
+                int opAero;
+
+                cout << "\n";
+                mostrarAeroportos(rotas);
+                cout << "\nSelecione o aeroporto a ser verificado : ";
+                cin >> opAero;
+                cin.ignore();
+
+                if (opAero < 1 || opAero > 23)
+                    cout << "\nOpcao incorreta !";
+                else 
+                     verificarAero(rotas,opAero - 1);
+
+
+                
                 break;
             }
-            case 6: //Verificar tempo de voo minimo de um aeroporto para os outros
+            case 6: //Gerar grafo otimizado
             {
+                
+                gerarGrafoOtimizado(voos);
+
                 break;
             }
+
+            case 7: //Verificar tempo de voo minimo de um aeroporto para os outros
+            {
+            
+
+                break; 
+            }
+
             default:
             {
                 cout << "\nOpcao incorreta !";
@@ -140,20 +213,19 @@ int main() {
 int MENU() {
 
     int op;
-
-    cout << "\n-----------------------------";
+        
     cout << "\nMENU";
     cout << "\n0- SAIR";
     cout << "\n1- Visualizar grafos de rotas e voos";
     cout << "\n2- Consultar disponibilidade de rota entre dois aeroportos";
     cout << "\n3- Exibir voos diretos a partir de um aeroporto";
     cout << "\n4- Consultar viagem de menor custo";
-    cout << "\n5- Gerar grafo otimizado";
-    cout << "\n6- Verificar tempo de voo minimo de um aeroporto para os outros";
+    cout << "\n5- Checar possibilidade de chegada de um aeroporto para todos os outros";
+    cout << "\n6- Gerar grafo otimizado";
+    cout << "\n7- Verificar tempo de voo minimo de um aeroporto para os outros";
     cout << "\nDigite a opcao desejada: ";
     cin >> op;
     cin.ignore();
-    cout << "\n-----------------------------";
 
     return op;
 

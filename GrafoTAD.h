@@ -78,6 +78,18 @@ int posicaoRota(Rotas* rotas, char* aero);
 //Questao 4
 void mostrarVoos(int aero, Voos* voos);
 
+//Questao 5
+void mostrarMenorRota(Voos* voos, int aeroOrigem, int aeroDestino, int OpAv);
+void atualizaAresta(Voos* voos, int* vetPesos, double* vetPesosFloat, int* vetPredecessores, int vMenor, int vAtual);
+int menorDist(Voos* voos, bool* aberto, int* vetPesos);
+int menorTempo(Voos* voos, bool* aberto, double* vetPesos);
+bool existeAberto(Voos* voos, bool* aberto);
+
+//Questao 6
+void verificarAero(Rotas* rotas, int opAero);
+
+//Questao 7
+void gerarGrafoOtimizado(Voos* voos);
 
 #endif /* GRAFO_H */
 
