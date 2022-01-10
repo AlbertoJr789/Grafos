@@ -2,6 +2,7 @@
 
 #include "GrafoTAD.h"
 #include "HoraUtil.h"
+#include "ArvMin.h"
 
 #include <cstdlib>
 #include <string.h>
@@ -434,7 +435,7 @@ void DFSRotas(Rotas* rotas,bool* visitados,int aeroOriginal,int aero1,int aero2,
 
 	if (rotasAdj) { 
 
-		if (!strcmp(rotasAdj->aero, rotas->vr[aero2].aero)) { //caso a rota adjacente seja a rota de destino
+		if (!strcmp(rotasAdj->aero, rotas->vr[aero2].aero) && !*jaAchou) { //caso a rota adjacente seja a rota de destino
 
 			cout << rotas->vr[aero2].aero << "(Destino)";
 			*jaAchou = true; //marca-la como encontrada
@@ -508,7 +509,6 @@ void mostrarMenorRota(Voos* voos, int aeroOrigem, int aeroDestino, int OpAv) {
 			posMenor = menorTempo(voos, aberto, vetPesos);
 			aberto[posMenor] = false;
 			
-
 			struct arestaVoo* voosAdj = voos->v[posMenor].cab;
 			
 
@@ -714,58 +714,61 @@ void gerarGrafoOtimizado(Voos* voos) {
 	//Algoritmo de Prim
 	//Utilizado para grafos mais densos (maior quantidade de arestas do que vertices)
 	//Utiliza estrutura de dados lista
+		
+	int* pai = (int*)malloc(voos->qtdV * sizeof(int)); // Array para guardar pai dos vertices da AGM
+	int* peso = (int*)malloc(voos->qtdV * sizeof(int)); // Array para guardar os pesos de corte minimo
+	int* posVoos = (int*)malloc(voos->qtdV * sizeof(int)); // Array para guardar os pesos de corte minimo
+	
+	struct ArvMin* AGM = criarArvore(voos->qtdV);
 
-	int origem = 0, dest, menorPeso = INT_MAX/2 , posMenorPeso = -1; //vertice na qual o algoritmo sera iniciado
-	Voos* AGM;
-	memcpy(AGM, voos, sizeof(Voos));
-
-	int* pai = (int*)malloc(voos->qtdV * sizeof(int));
-
-	for (int i = 0; i < voos->qtdV; i++)
-		pai[i] = -1; //inicializa todos os vertices sem pai
-
-	pai[0] = 0; //iniciando pelo vertice 0
-
-	while (1) {
-
-		int primeiro = 0;
-
-		for (int i = 0; i < voos->qtdV; i++) {
-
-			if (pai[i] != -1) {
-
-				struct arestaVoo* voosAdj = voos->v[i].cab;
-								
-
-				while (voosAdj) {
-
-					if (voosAdj->distancia < menorPeso) { //procura o vertice com a menor distancia
-
-						menorPeso = voosAdj->distancia;
-						posMenorPeso = buscarAeroOrigem(voos, voosAdj->aero); //obtem a posicao do vertice
-					}
-
-
-				}
-
-
-			}
-
-
-		}
-
-		if (primeiro)
-			break;
-
-		pai[posMenorPeso] = origem;
-
-
+	// inicializando a AGM e os Pesos
+	for (int i = 1; i < voos->qtdV; i++) {
+		pai[i] = -1;
+		peso[i] = INT_MAX/2;
+		AGM->array[i] = adicionarNoMin(i, peso[i]);
+		AGM->pos[i] = i;
 	}
 
+	//o Peso do primeiro vertice sera 0
+	peso[0] = 0;
+	AGM->array[0] = adicionarNoMin(0, peso[0]);
+	AGM->pos[0] = 0;
+
+	// Inicializa o tamanho da AGM baseado na quantidade de vertices do grafo de voos
+	AGM->tam = voos->qtdV;
+		
+	while (!estaVazio(AGM)) {
+
+		// Extraindo o vertice com o menor peso(Distancia)
+		struct ArvMinNo* ArvMinNo = extrairMin(AGM);
+		int u = ArvMinNo->v; // Guarda a posicao do vertice extraido
+		
+		//atualizando o valor dos vertices
+		struct arestaVoo* voosAdj = voos->v[u].cab;
+		
+		int posVoo = 0;
+
+		while (voosAdj) {
+			
+			int v = buscarAeroOrigem(voos,voosAdj->aero);
+					
+			// se o vertice v nao estiver incluido na arvore e o seu peso for menor
+			// entao o valor do seu pai sera atualizado
+			if (estaNaArvore(AGM, v) && voosAdj->distancia < peso[v]) {
+			
+				peso[v] = voosAdj->distancia;
+				pai[v] = u;
+				posVoos[v] = posVoo;
+				decrementarChave(AGM, v, peso[v]);
+			}
+			voosAdj = voosAdj->prox;
+			posVoo++;
+		}
+	}
+
+	// printa a AGM
+	imprimirAGM(voos,pai,posVoos);
 	
-	
-
-
-
-
 }
+
+// Questao 8

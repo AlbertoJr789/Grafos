@@ -1,26 +1,15 @@
 
-
 #include "GrafoTAD.h"
 #include <iostream>
 #include <stdio.h>
 #include <climits>
-
 
 int MENU();
 
 using namespace std;
 
 int main() {
-               
-    // verificar se de um aeroporto para o outro tem um caminho direto
-    // se nao, verificar a rota alternativa
-    // o grafo nao é hamiltoniano
-    // 6 - Algoritmo de Kruskal  
-    
-    // DFS - Biziu na hora de desempilhar imprimi rota que deu errado
-    // Considerações : alguns horarios de chegada/entrada aparentam incorretos ??
-    // DL1166  ATL  632A  BNA  625A
-
+       
     Rotas* rotas = NULL;
     Voos* voos = NULL;
          
@@ -171,9 +160,7 @@ int main() {
                     cout << "\nOpcao incorreta !";
                 else 
                      verificarAero(rotas,opAero - 1);
-
-
-                
+                                
                 break;
             }
             case 6: //Gerar grafo otimizado
@@ -186,7 +173,26 @@ int main() {
 
             case 7: //Verificar tempo de voo minimo de um aeroporto para os outros
             {
-            
+
+                int op;
+
+                while (1) {
+
+                    cout << "\n";
+                    mostrarAeroportos(rotas);
+                    cout << "\nSelecione o primeiro aeroporto desejado: ";
+                    cin >> op;
+                    cin.ignore();
+
+                    if (op < 1 || op > 23)
+                        cout << "\nOpcao incorreta !";
+                    else {
+
+                        //mostrarRotaCaminhoMinimo(rotas,voos,op-1);
+                        break;
+                    }
+                    
+                }
 
                 break; 
             }
