@@ -89,7 +89,7 @@ int main() {
                         cout << "\nOpcao incorreta !";
                     else {
 
-                        mostrarVoos(op - 1, voos);
+                        mostrarVoos(op - 1, voos,rotas);
                         break;
                     }
                 }
@@ -119,20 +119,8 @@ int main() {
                         if ((op2 == op1) || (op2 < 1 || op2 > 23))
                             cout << "\nOpcao Incorreta ! O segundo aeroporto deve ser diferente ou a opcao selecionada nao existe !";
                         else {
-
-                            int opAv;
-
-                            cout << "\nGostaria de avaliar a melhor rota de voo por distancia ou tempo ?";
-                            cout << "\n1- Avaliar por tempo total de viagem";
-                            cout << "\n2- Avaliar por distancia total";
-                            cout << "\nEscolha a opcao desejada: ";
-                            cin >> opAv;
-                            cin.ignore();
-
-                            if (opAv < 1 || opAv > 2)
-                                cout << "\nOpcao Incorreta ! Insira novamente !";
-                            else 
-                               mostrarMenorRota(voos, op1 - 1, op2 - 1, opAv);
+                                                        
+                               mostrarMenorRota(voos, op1 - 1, op2 - 1);
                                             
 
                             break;
@@ -171,32 +159,6 @@ int main() {
                 break;
             }
 
-            case 7: //Verificar tempo de voo minimo de um aeroporto para os outros
-            {
-
-                int op;
-
-                while (1) {
-
-                    cout << "\n";
-                    mostrarAeroportos(rotas);
-                    cout << "\nSelecione o primeiro aeroporto desejado: ";
-                    cin >> op;
-                    cin.ignore();
-
-                    if (op < 1 || op > 23)
-                        cout << "\nOpcao incorreta !";
-                    else {
-
-                        //mostrarRotaCaminhoMinimo(rotas,voos,op-1);
-                        break;
-                    }
-                    
-                }
-
-                break; 
-            }
-
             default:
             {
                 cout << "\nOpcao incorreta !";
@@ -228,7 +190,6 @@ int MENU() {
     cout << "\n4- Consultar viagem de menor custo";
     cout << "\n5- Checar possibilidade de chegada de um aeroporto para todos os outros";
     cout << "\n6- Gerar grafo otimizado";
-    cout << "\n7- Verificar tempo de voo minimo de um aeroporto para os outros";
     cout << "\nDigite a opcao desejada: ";
     cin >> op;
     cin.ignore();

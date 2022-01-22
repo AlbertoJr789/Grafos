@@ -38,7 +38,6 @@ bool lerArquivo(Voos** voos, Rotas** rotas) {
 			if (contLinha < 23) { //as primeiras 23 linhas possuem os aeroportos
 
 				char* charLinha = new char[linha.length()];
-
 				strcpy(charLinha, linha.c_str());
 
 				//atribuindo os dados ao grafo de rotas 
@@ -78,21 +77,10 @@ bool lerArquivo(Voos** voos, Rotas** rotas) {
 				char* Origem = strtok(charLinha, " ");
 				//obtendo rota de destino
 				char* Destino = strtok(NULL, " ");
-																
-				for (int i = 0; i < (*rotas)->qtdR; i++) {
-
-					//procurando a posição do vértice de origem
-					if (!strcmp((*rotas)->vr[i].aero, Origem))
-						posOrigem = i;
-					//procurando a posição do vértice de destino
-					if (!strcmp((*rotas)->vr[i].aero, Destino))
-						posDestino = i;
-
-				}
-
-				//adicionando a rota (de forma não direcionada)
-				adicionarRota(rotas,posOrigem,Origem,Destino);
-				adicionarRota(rotas,posDestino,Destino,Origem);
+															
+				//adiciona as rotas de forma de nao direcionada
+				adicionarRota(rotas, posicaoRota((*rotas), Origem),Origem,Destino);
+				adicionarRota(rotas, posicaoRota((*rotas), Destino),Destino,Origem);
 
 			}
 			else { //leitura dos voos
@@ -151,7 +139,7 @@ void mostrarGrafo(Rotas* rotas, Voos* voos) {
 		for (int i = 0; i < rotas->qtdR; i++) { //percorrendo os aeroportos
 
 			cout << "\n";
-			//printf("%s(%s) ", rotas->vr[i].aero, rotas->vr[i].aeroNome);
+			
 			printf("%s ", rotas->vr[i].aero);
 			struct arestaRota* rotasAdj = rotas->vr[i].cab;
 
@@ -173,12 +161,12 @@ void mostrarGrafo(Rotas* rotas, Voos* voos) {
 
 
 		cout << "\n-------------------------------------";
-		cout << "\nVOOS DO AEROPORTO";
+		cout << "\nVOOS DOS AEROPORTOS";
 
 		for (int i = 0; i < voos->qtdV; i++) { //percorrendo os aeroportos
 			cout << "\n-------------------------------------";
 			cout << "\n";
-			//printf("%s(%s) ", rotas->vr[i].aero, rotas->vr[i].aeroNome);
+		
 			printf("AERO ORIGEM: %s ", voos->v[i].aero);
 			struct arestaVoo* voosAdj = voos->v[i].cab;
 
@@ -458,22 +446,34 @@ int posicaoRota(Rotas* rotas, char* aero) {
 
 //Questao 4
 
-void mostrarVoos(int aero, Voos* voos) {
+void mostrarVoos(int aero, Voos* voos,Rotas* rotas) {
 
 	struct arestaVoo* voosAdj = voos->v[aero].cab;
+	struct arestaRota* rotasAdj = rotas->vr[aero].cab;
 
 	cout << "\nVoos disponiveis em " << voos->v[aero].aeroNome;
 
 	while (voosAdj) {
-		
-		cout << "\n-------------------------------------------";
-		printf("\nEmpresa: %s", voosAdj->empresaAero);
-		printf("\nDestino : %s(%s)", voosAdj->aero,voosAdj->aeroNome);
-		printf("\nDistancia:  %dkm", voosAdj->distancia);
-		printf("\nTempo de viagem:  %.2lf horas", voosAdj->TempoViagem);
-		cout << "\n-------------------------------------------";
+	
+		rotasAdj = rotas->vr[aero].cab;
 
-		voosAdj = voosAdj->prox;
+		while (rotasAdj) {
+
+			if (!strcmp(voosAdj->aero, rotasAdj->aero)) { // significa que tem uma rota direta desse aeroporto com o outro
+
+				cout << "\n-------------------------------------------";
+				printf("\nEmpresa: %s", voosAdj->empresaAero);
+				printf("\nDestino : %s(%s)", voosAdj->aero, voosAdj->aeroNome);
+				printf("\nDistancia:  %dkm", voosAdj->distancia);
+				printf("\nTempo de viagem:  %.2lf horas", voosAdj->TempoViagem);
+				cout << "\n-------------------------------------------";
+
+			}
+
+			rotasAdj = rotasAdj->prox;
+		}
+
+ 		voosAdj = voosAdj->prox;
 	}
 
 
@@ -481,177 +481,89 @@ void mostrarVoos(int aero, Voos* voos) {
 
 //Questao 5 
 
-void mostrarMenorRota(Voos* voos, int aeroOrigem, int aeroDestino, int OpAv) {
-		
+void mostrarMenorRota(Voos* voos, int aeroOrigem, int aeroDestino) {
+							
+	//vetor de distancias
+	double* tempo = (double*)malloc(voos->qtdV * sizeof(double));
+	int* pai = (int*)malloc(voos->qtdV * sizeof(int));
+	int* posVoos = (int*)malloc(voos->qtdV * sizeof(int));
+	bool* visitados = (bool*)calloc(voos->qtdV, sizeof(int));
+	int v;
 
-	if (OpAv == 1) { //avaliar por tempo total de viagem
-
-		double* vetPesos = (double*)malloc(voos->qtdV * sizeof(double));
-		int* vetPredecessores = (int*)malloc(voos->qtdV * sizeof(int));
-		bool* aberto = (bool*)malloc(voos->qtdV * sizeof(bool));
-
-		//DIJKSTRA 
-		for (int i = 0; i < voos->qtdV; i++) {//inicializando o vetor com um valor inteiro grande
-
-			vetPesos[i] = LONG_MAX / 2;
-			vetPredecessores[i] = -1; //o vetor de predecessores nao possui nenhum vertice registrado ainda
-			aberto[i] = true; //todos os vertices estao abertos para visita 
-		}
-
-		vetPesos[aeroOrigem] = 0.0; //inicializando o valor do aeroporto de Origem em zero (seja tempo de viagem ou distancia)
-
-		int posMenor = -1;
-
-		printf("Origem: %s ", voos->v[aeroOrigem].aero);
-
-		while (existeAberto(voos, aberto)) {
-
-			posMenor = menorTempo(voos, aberto, vetPesos);
-			aberto[posMenor] = false;
-			
-			struct arestaVoo* voosAdj = voos->v[posMenor].cab;
-			
-
-			while (voosAdj && aberto[aeroDestino] ) { //relaxando as arestas
-			
-				int posAtual = buscarAeroOrigem(voos, voosAdj->aero);
-				atualizaAresta(voos, NULL, vetPesos, vetPredecessores, posMenor, posAtual);
-				voosAdj = voosAdj->prox;
-
-			}
-
-		}
-		
+	//inicializando o valor dos vertices
+	for (int i = 0; i < voos->qtdV; i++)
+	{
+			pai[i] = -1;
+			tempo[i] = LONG_MAX/2;
+			posVoos[i] = -1;
 	}
-	else { // avaliar por tempo total de distancia
-
-		int* vetPesos = (int*)malloc(voos->qtdV * sizeof(int));
-		int* vetPredecessores = (int*)malloc(voos->qtdV * sizeof(int));
-		bool* aberto = (bool*)malloc(voos->qtdV * sizeof(bool));
-
-		//DIJKSTRA 
-		for (int i = 0; i < voos->qtdV; i++) {//inicializando o vetor com um valor inteiro grande
-
-			vetPesos[i] = INT_MAX / 2;
-			vetPredecessores[i] = -1; //o vetor de predecessores nao possui nenhum vertice registrado ainda
-			aberto[i] = true; //todos os vertices estao abertos para visita 
-		}
-		
-		//inicializando o valor do aeroporto de Origem em zero (seja tempo de viagem ou distancia)
-		vetPesos[aeroOrigem] = 0; 
-		int posMenor = -1;
-
-		printf("\nOrigem: %s ", voos->v[aeroOrigem].aero);
-
-		while (existeAberto(voos, aberto)) {
-
-			posMenor = menorDist(voos, aberto, vetPesos);
-			aberto[posMenor] = false;
-			
-			struct arestaVoo* voosAdj = voos->v[posMenor].cab;
-			//printf(" -> %s", voosAdj->aero);
-
-			while (voosAdj && aberto[aeroDestino]) { //relaxando as arestas
-
-				int posAtual = buscarAeroOrigem(voos, voosAdj->aero);
-				atualizaAresta(voos, vetPesos, NULL, vetPredecessores, posMenor, posAtual);
-				voosAdj = voosAdj->prox;
-
-			}
-
-		}
-		
-
-
-	}
-}
-
-bool existeAberto(Voos* voos,bool* aberto) {
-
-	//confirma se tem algum vertice aberto para verificacao
-	for (int i = 0; i < voos->qtdV; i++) 
-		if (aberto[i]) return true;
-		
-	return false;
-
-}
-
-int menorTempo(Voos* voos, bool* aberto, double* vetPesos) {
-
-	int i = 0;
-
-	for (i = 0; i < voos->qtdV; i++)
-		if (aberto[i]) break;
-
-	if (i == voos->qtdV) return -1;
-
-	int menor = i;
-
-	for (i = menor + 1; i < voos->qtdV; i++)
-		if (aberto[i] && (vetPesos[menor] > vetPesos[i]))
-			menor = i;
-
-	return menor;
-
-}
-
-int menorDist(Voos* voos,bool* aberto,int* vetPesos) {
-
-	int i = 0;
-
-	for (i = 0; i < voos->qtdV; i++) 
-		 if (aberto[i]) break;
-
-	if (i == voos->qtdV) return -1;
-
-	int menor = i;
-
-	for (i = menor + 1; i < voos->qtdV; i++)
-		if (aberto[i] && (vetPesos[menor] > vetPesos[i]))
-			menor = i;
-
-	return menor;
-
-}
-
-void atualizaAresta(Voos* voos, int* vetPesos, double* vetPesosFloat, int* vetPredecessores,int vMenor,int vAtual) {
+							
+	tempo[aeroOrigem] = 0;
 	
-	struct arestaVoo* voosAdj = voos->v[vMenor].cab;
-
-	if (vetPesos) { //arestas de distancia
-
-		while (voosAdj && (buscarAeroOrigem(voos, voosAdj->aero) != vAtual))
-				voosAdj = voosAdj->prox;
-
-		if (voosAdj) {
-
-			if (vetPesos[vAtual] > vetPesos[vMenor] + voosAdj->distancia) {
-				
-				vetPesos[vAtual] = vetPesos[vMenor] + voosAdj->distancia;
-				vetPredecessores[vAtual] = vMenor;
-			}
-
-		}
-
-	}
-
-	if (vetPesosFloat) { //arestas de tempo de viagem
-
-		//busca a adjacencia atual para ajuste das arestas
-		while (voosAdj && (buscarAeroOrigem(voos, voosAdj->aero) != vAtual))
-			voosAdj = voosAdj->prox;
-
-		if (voosAdj) { //caso ela seja encontrada
+	while (temAberto(voos,visitados))
+	{						
 			
-			if (vetPesosFloat[vAtual] > vetPesosFloat[vMenor] + voosAdj->TempoViagem) {
+		int u = menorTempo(voos, tempo,visitados);
+		visitados[u] = true;
 
-				vetPesosFloat[vAtual] = vetPesosFloat[vMenor] + voosAdj->TempoViagem;
-				vetPredecessores[vAtual] = vMenor;
+		//relaxa as arestas do vertice extraido
+		struct arestaVoo* voosAdj = voos->v[u].cab;
+		int posVoo = 0;
+			
+		while (voosAdj)
+		{	//pega a posicao do vertice 
+			 v = buscarAeroOrigem(voos,voosAdj->aero);
+
+			//verifica se o vertice nao foi fechado ainda e se o tempo é o menor
+			if (!visitados[v] && tempo[u] != INT_MAX && voosAdj->TempoViagem + tempo[u] < tempo[v])
+			{
+				//relaxa a aresta
+				tempo[v] = tempo[u] + voosAdj->TempoViagem;
+				pai[v] = u;
+				posVoos[v]= posVoo;
+										
 			}
+			voosAdj = voosAdj->prox;
+			posVoo++;
+		}
+			
+	}
+
+		// imprime o menor caminho
+	imprimirMenorRota(voos, tempo,posVoos, pai,aeroOrigem,aeroDestino);
+		
+	
+}
+
+bool temAberto(Voos* voos,bool* visitados) {
+
+	for (int i = 0; i < voos->qtdV; i++) {
+
+		if (!visitados[i]) //se tiver vertice que nao foi visitado ainda
+			return true;
+
+	}
+	//se nao achar nenhum vertice que nao foi visitado, retornar falso
+	return false;
+}
+
+int menorTempo(Voos* voos,double* tempo,bool* visitados) {
+
+
+	double min = LONG_MAX / 2;
+	int min_index;
+
+	for (int v = 0; v < voos->qtdV; v++)
+		
+		if (!visitados[v] && tempo[v] <= min) {
+
+			min = tempo[v];
+			min_index = v;
 
 		}
 
-	}
+	return min_index;
+
 
 }
 
@@ -713,10 +625,9 @@ void gerarGrafoOtimizado(Voos* voos) {
 
 	//Algoritmo de Prim
 	//Utilizado para grafos mais densos (maior quantidade de arestas do que vertices)
-	//Utiliza estrutura de dados lista
 		
 	int* pai = (int*)malloc(voos->qtdV * sizeof(int)); // Array para guardar pai dos vertices da AGM
-	int* peso = (int*)malloc(voos->qtdV * sizeof(int)); // Array para guardar os pesos de corte minimo
+	double* peso = (double*)malloc(voos->qtdV * sizeof(double)); // Array para guardar os pesos de corte minimo
 	int* posVoos = (int*)malloc(voos->qtdV * sizeof(int)); // Array para guardar os pesos de corte minimo
 	
 	struct ArvMin* AGM = criarArvore(voos->qtdV);
@@ -724,7 +635,7 @@ void gerarGrafoOtimizado(Voos* voos) {
 	// inicializando a AGM e os Pesos
 	for (int i = 1; i < voos->qtdV; i++) {
 		pai[i] = -1;
-		peso[i] = INT_MAX/2;
+		peso[i] = LONG_MAX/2;
 		AGM->array[i] = adicionarNoMin(i, peso[i]);
 		AGM->pos[i] = i;
 	}
@@ -754,9 +665,9 @@ void gerarGrafoOtimizado(Voos* voos) {
 					
 			// se o vertice v nao estiver incluido na arvore e o seu peso for menor
 			// entao o valor do seu pai sera atualizado
-			if (estaNaArvore(AGM, v) && voosAdj->distancia < peso[v]) {
+			if (estaNaArvore(AGM, v) && voosAdj->TempoViagem < peso[v]) {
 			
-				peso[v] = voosAdj->distancia;
+				peso[v] = voosAdj->TempoViagem;
 				pai[v] = u;
 				posVoos[v] = posVoo;
 				decrementarChave(AGM, v, peso[v]);
@@ -771,4 +682,3 @@ void gerarGrafoOtimizado(Voos* voos) {
 	
 }
 
-// Questao 8

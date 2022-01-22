@@ -4,52 +4,51 @@
 #define GRAFO_H
 
 
-//grafo rotas
 
 #include <string>
 
-struct arestaRota {
-    char aero[4];
-    struct arestaRota* prox;
+//grafo rotas
+struct arestaRota { // arestas/ligacoes do grafo
+    char aero[4]; //abreviatura do aeroporto
+    struct arestaRota* prox; //proxima rota
 
 };
 
-typedef struct {
-    char aero[4];
-    char* aeroNome;
-    struct arestaRota* cab,*ultimo;
+typedef struct { //vertices do grafo
+    char aero[4]; //abreviatura do aeroporto
+    char* aeroNome; //nome do aeroporto
+    struct arestaRota* cab,*ultimo; //ponteiros da lista ligada de arestas 
 
 } VerticeRotas;
 
-typedef struct {
-    int qtdR;
-    VerticeRotas* vr;
+typedef struct { //estrutura geral do grafo
+    int qtdR; //quantidade de Rotas
+    VerticeRotas* vr; // contem os vertices, que contem as arestas
 
 } Rotas;
 
 //grafo Voos
-
 struct arestaVoo {
-    char empresaAero[3];
-    char aero[4];
-    char* aeroNome;
-    int distancia;
-    double TempoViagem;
-    struct arestaVoo* prox;
+    char empresaAero[3]; //Guarda a empresa do voo
+    char aero[4]; //abreviatura do aeroporto de destino
+    char* aeroNome; //nome do aeroporto de destino
+    int distancia; //distancia em kilometros
+    double TempoViagem; //tempo de viagem em horas decimais
+    struct arestaVoo* prox; //proximo voo pertencente ao vertice de origem
 };
 
 typedef struct {
    
-    char aero[4];
-    char* aeroNome;
-    struct arestaVoo* cab, *ultimo;
+    char aero[4]; //abreviatura do aeroporto de origem
+    char* aeroNome;//nome do aeroporto de origem
+    struct arestaVoo* cab, *ultimo; //ponteiros da lista ligada de arestas (Voos)
 
 } VerticeVoos;
 
 typedef struct {
 
-    int qtdV;
-    VerticeVoos* v;
+    int qtdV; //quantidade de Voos
+    VerticeVoos* v; // contem os vertices, que contem as arestas
 
 } Voos;
 
@@ -76,14 +75,13 @@ void DFSRotas(Rotas* rotas, bool* visitados, int aeroOriginal, int aero1, int ae
 int posicaoRota(Rotas* rotas, char* aero);
 
 //Questao 4
-void mostrarVoos(int aero, Voos* voos);
+void mostrarVoos(int aero, Voos* voos,Rotas* rotas);
 
 //Questao 5
-void mostrarMenorRota(Voos* voos, int aeroOrigem, int aeroDestino, int OpAv);
-void atualizaAresta(Voos* voos, int* vetPesos, double* vetPesosFloat, int* vetPredecessores, int vMenor, int vAtual);
-int menorDist(Voos* voos, bool* aberto, int* vetPesos);
-int menorTempo(Voos* voos, bool* aberto, double* vetPesos);
-bool existeAberto(Voos* voos, bool* aberto);
+void imprimirMenorRota(Voos* voos, double* tempo,int* posVoos, int* pai, int aeroOrigem, int aeroDestino);
+void mostrarMenorRota(Voos* voos, int aeroOrigem, int aeroDestino);
+int menorTempo(Voos* voos, double* tempo, bool* visitados);
+bool temAberto(Voos* voos, bool* visitados);
 
 //Questao 6
 void verificarAero(Rotas* rotas, int opAero);
